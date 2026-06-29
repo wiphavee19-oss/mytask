@@ -12,18 +12,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* CSS STYLES - COMBINED & REFINED */
+        /* CSS STYLES - COMBINED & REFINED FOR PREMIUM BLACK THEME WITH BRIGHTER CARDS */
         :root {
             --primary-color: #4f46e5;
             --primary-hover: #4338ca;
-            --bg-color: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.7);
+            --bg-color: #000000; /* Pure Black Background */
+            --card-bg: rgba(30, 30, 30, 0.9); /* Adjusted to a slightly brighter carbon slate for better contrast */
             --text-color: #f8fafc;
             --text-muted: #94a3b8;
-            --border-color: rgba(255, 255, 255, 0.08);
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-color: rgba(255, 255, 255, 0.12); /* Slightly brighter border to define elements clearly on black */
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
             
             --success: #10b981;
             --warning: #f59e0b;
@@ -441,7 +441,7 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.04); /* Brighter slate element */
             padding: 15px;
             border-radius: 10px;
             margin-bottom: 15px;
@@ -467,7 +467,7 @@
             position: absolute;
             width: 54px;
             height: 54px;
-            background-color: var(--bg-color);
+            background-color: var(--success); /* FIXED: Changed from #1e1e1e to Green (var(--success)) */
             border-radius: 50%;
         }
 
@@ -479,22 +479,13 @@
             align-items: center;
             font-weight: 700;
             font-size: 0.95rem;
+            color: #ffffff; /* FIXED: High contrast white over green background */
         }
 
         .progress-ring-text .text-xs {
             font-size: 0.6rem;
-            font-weight: 400;
-            color: var(--text-muted);
-        }
-
-        .progress-summary-details p {
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .progress-summary-details span {
-            font-size: 0.8rem;
-            color: var(--text-muted);
+            font-weight: 500;
+            color: #e2e8f0; /* FIXED: Light, highly legible gray-white over green background */
         }
 
         /* CATEGORY CHART */
@@ -560,7 +551,7 @@
             min-height: 180px;
             display: flex;
             flex-direction: column;
-            background: rgba(255, 255, 255, 0.01);
+            background: rgba(255, 255, 255, 0.03); /* Brighter background for quadrants */
         }
 
         .quadrant-header {
@@ -598,7 +589,7 @@
         }
 
         .matrix-mini-card {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.05); /* Slightly brighter mini card */
             border-left: 3px solid;
             padding: 6px 10px;
             border-radius: 4px;
@@ -613,7 +604,7 @@
 
         .matrix-mini-card:hover {
             transform: translateX(4px);
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .light-theme .matrix-mini-card {
@@ -725,7 +716,7 @@
         }
 
         .premium-table tr:hover {
-            background-color: rgba(255, 255, 255, 0.01);
+            background-color: rgba(255, 255, 255, 0.02);
         }
 
         .light-theme .premium-table tr:hover {
@@ -856,7 +847,7 @@
         }
 
         .kanban-column {
-            background-color: rgba(30, 41, 59, 0.3);
+            background-color: rgba(255, 255, 255, 0.04); /* Adjusted to a slightly brighter translucent black */
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
@@ -1023,7 +1014,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.04); /* Brighter list item */
             padding: 10px 12px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
@@ -1078,7 +1069,7 @@
             padding-right: 4px;
         }
         .contact-item {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.04); /* Brighter list item */
             border: 1px solid var(--border-color);
             padding: 12px;
             border-radius: 8px;
@@ -1145,7 +1136,7 @@
         }
 
         .modal-content {
-            background: var(--bg-color);
+            background: #1e1e1e; /* Brighter slate for dark modals */
             border: 1px solid var(--border-color);
             border-radius: 16px;
             max-width: 550px;
@@ -2797,6 +2788,7 @@
             }
         }
 
+        // Get status name
         function getStatusName(status) {
             switch (status) {
                 case 'todo': return 'ต้องทำ';
