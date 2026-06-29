@@ -456,6 +456,7 @@
             align-items: center;
             justify-content: center;
             position: relative;
+            flex-shrink: 0; /* FIXED: Prevent oval distortion on flex layout */
         }
 
         .light-theme .progress-ring-container {
@@ -465,10 +466,14 @@
         .progress-ring-container::before {
             content: "";
             position: absolute;
-            width: 54px;
-            height: 54px;
-            background-color: var(--success); /* FIXED: Changed from #1e1e1e to Green (var(--success)) */
+            width: 80%; /* FIXED: Using percentage instead of fixed pixel ensures pixel-perfect symmetry */
+            height: 80%;
+            background-color: var(--success); /* Green background */
             border-radius: 50%;
+            top: 50%; /* FIXED: Mathematically centers absolute circle flawlessly on any screen */
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
         }
 
         .progress-ring-text {
@@ -479,13 +484,36 @@
             align-items: center;
             font-weight: 700;
             font-size: 0.95rem;
-            color: #ffffff; /* FIXED: High contrast white over green background */
+            color: #ffffff; /* High contrast white over green background */
         }
 
         .progress-ring-text .text-xs {
             font-size: 0.6rem;
             font-weight: 500;
-            color: #e2e8f0; /* FIXED: Light, highly legible gray-white over green background */
+            color: #e2e8f0; /* Light, highly legible gray-white over green background */
+        }
+
+        /* PROGRESS SUMMARY DETAILS */
+        .progress-summary-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1; /* Let text container take remaining width */
+            min-width: 0; /* Prevent layout overflow and text clipping */
+        }
+
+        .progress-summary-details p {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0;
+            white-space: nowrap; /* Avoid unnecessary title wrapping */
+        }
+
+        .progress-summary-details span {
+            font-size: 0.78rem; /* Optimized size to fit perfectly into exactly 1 line */
+            color: var(--text-muted);
+            display: block;
+            line-height: 1.3;
         }
 
         /* CATEGORY CHART */
@@ -656,16 +684,17 @@
 
         .search-box i {
             position: absolute;
-            left: 12px;
+            left: 14px; /* FIXED: Shifted slightly for a balanced grid alignment */
             color: var(--text-muted);
             font-size: 0.9rem;
+            pointer-events: none; /* Make click event fallthrough directly to input */
         }
 
         .search-box input {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 8px 12px 8px 36px;
+            padding: 8px 12px 8px 44px; /* FIXED: Increased left padding to completely avoid icon overlapping on Thai letters */
             color: var(--text-color);
             font-size: 0.9rem;
             width: 220px;
@@ -2229,81 +2258,6 @@
             });
         }
 
-        function renderKanbanBoard() {
-            const matrixFilter = document.querySelector('.filter-btn.active').getAttribute('data-matrix');
-            
-            const filteredTasks = tasks.filter(t => {
-                if (matrixFilter === 'all') return true;
-                if (matrixFilter === 'ui') return t.urgency === 'urgent' && t.importance === 'important';
-                if (matrixFilter === 'inu') return t.urgency === 'not_urgent' && t.importance === 'important';
-                if (matrixFilter === 'uni') return t.urgency === 'urgent' && t.importance === 'not_important';
-                if (matrixFilter === 'nuni') return t.urgency === 'not_urgent' && t.importance === 'not_important';
-                return true;
-            });
-
-            const statuses = ['todo', 'in_progress', 'review', 'completed'];
-
-            statuses.forEach(status => {
-                const colContainer = document.getElementById(`cards-${status}`);
-                colContainer.innerHTML = '';
-                
-                const colTasks = filteredTasks.filter(t => t.status === status);
-                const countElId = status === 'in_progress' ? 'count-col-inprogress' : `count-col-${status}`;
-                document.getElementById(countElId).innerText = colTasks.length;
-
-                if (colTasks.length === 0) {
-                    colContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; border: 1px dashed var(--border-color); padding: 20px; border-radius: 8px;">ไม่มีรายการงานค้าง</div>`;
-                    return;
-                }
-
-                colTasks.forEach(task => {
-                    const isOver = isOverdue(task);
-                    const card = document.createElement('div');
-                    card.className = `task-card ${isOver ? 'overdue-border' : ''}`;
-                    card.draggable = true;
-                    card.innerHTML = `
-                        <div class="task-card-header">
-                            <span class="badge badge-category-${task.category}">${getCategoryName(task.category)}</span>
-                            <span class="badge badge-priority badge-priority-${getPriorityClass(task)}">${getPriorityName(task)}</span>
-                        </div>
-                        <div class="task-card-title">${escapeHTML(task.title)}</div>
-                        ${task.desc ? `<div class="task-card-desc">${escapeHTML(task.desc)}</div>` : ''}
-                        <div class="task-card-meta">
-                            <span class="task-card-deadline ${isOver ? 'danger' : ''}">
-                                <i class="fa-regular fa-calendar"></i> ${formatThaiDate(task.deadline)}
-                            </span>
-                            <div class="kanban-action-triggers" style="display: flex; gap: 4px;">
-                                <button class="action-btn card-quick-edit" style="width: 24px; height: 24px; font-size: 0.75rem;" title="รายละเอียด"><i class="fa-solid fa-ellipsis-vertical"></i></button>
-                            </div>
-                        </div>
-                    `;
-
-                    // Drag Events
-                    card.addEventListener('dragstart', (e) => {
-                        card.classList.add('dragging');
-                        e.dataTransfer.setData('text/plain', task.id);
-                    });
-
-                    card.addEventListener('dragend', () => {
-                        card.classList.remove('dragging');
-                    });
-
-                    // Tap to Edit Events
-                    card.addEventListener('click', (e) => {
-                        if (e.target.closest('.kanban-action-triggers') || e.target.closest('.action-btn')) return;
-                        openModal(task);
-                    });
-
-                    card.querySelector('.card-quick-edit').addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openModal(task);
-                    });
-
-                    colContainer.appendChild(card);
-                });
-            });
-        }
-
         // --- RENDER DYNAMIC QUICK TO DO LIST ---
         function renderQuickTodos() {
             const listEl = document.getElementById('quick-todo-list');
@@ -2822,6 +2776,81 @@
                 "'": '&#39;',
                 '"': '&quot;'
             }[tag] || tag));
+        }
+
+        function renderKanbanBoard() {
+            const matrixFilter = document.querySelector('.filter-btn.active').getAttribute('data-matrix');
+            
+            const filteredTasks = tasks.filter(t => {
+                if (matrixFilter === 'all') return true;
+                if (matrixFilter === 'ui') return t.urgency === 'urgent' && t.importance === 'important';
+                if (matrixFilter === 'inu') return t.urgency === 'not_urgent' && t.importance === 'important';
+                if (matrixFilter === 'uni') return t.urgency === 'urgent' && t.importance === 'not_important';
+                if (matrixFilter === 'nuni') return t.urgency === 'not_urgent' && t.importance === 'not_important';
+                return true;
+            });
+
+            const statuses = ['todo', 'in_progress', 'review', 'completed'];
+
+            statuses.forEach(status => {
+                const colContainer = document.getElementById(`cards-${status}`);
+                colContainer.innerHTML = '';
+                
+                const colTasks = filteredTasks.filter(t => t.status === status);
+                const countElId = status === 'in_progress' ? 'count-col-inprogress' : `count-col-${status}`;
+                document.getElementById(countElId).innerText = colTasks.length;
+
+                if (colTasks.length === 0) {
+                    colContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 0.8rem; border: 1px dashed var(--border-color); padding: 20px; border-radius: 8px;">ไม่มีรายการงานค้าง</div>`;
+                    return;
+                }
+
+                colTasks.forEach(task => {
+                    const isOver = isOverdue(task);
+                    const card = document.createElement('div');
+                    card.className = `task-card ${isOver ? 'overdue-border' : ''}`;
+                    card.draggable = true;
+                    card.innerHTML = `
+                        <div class="task-card-header">
+                            <span class="badge badge-category-${task.category}">${getCategoryName(task.category)}</span>
+                            <span class="badge badge-priority badge-priority-${getPriorityClass(task)}">${getPriorityName(task)}</span>
+                        </div>
+                        <div class="task-card-title">${escapeHTML(task.title)}</div>
+                        ${task.desc ? `<div class="task-card-desc">${escapeHTML(task.desc)}</div>` : ''}
+                        <div class="task-card-meta">
+                            <span class="task-card-deadline ${isOver ? 'danger' : ''}">
+                                <i class="fa-regular fa-calendar"></i> ${formatThaiDate(task.deadline)}
+                            </span>
+                            <div class="kanban-action-triggers" style="display: flex; gap: 4px;">
+                                <button class="action-btn card-quick-edit" style="width: 24px; height: 24px; font-size: 0.75rem;" title="รายละเอียด"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+                            </div>
+                        </div>
+                    `;
+
+                    // Drag Events
+                    card.addEventListener('dragstart', (e) => {
+                        card.classList.add('dragging');
+                        e.dataTransfer.setData('text/plain', task.id);
+                    });
+
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('dragging');
+                    });
+
+                    // Tap to Edit Events
+                    card.addEventListener('click', (e) => {
+                        if (e.target.closest('.kanban-action-triggers') || e.target.closest('.action-btn')) return;
+                        openModal(task);
+                    });
+
+                    card.querySelector('.card-quick-edit').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openModal(task);
+                    });
+
+                    colContainer.appendChild(card);
+                });
+            });
         }
     </script>
 </body>
