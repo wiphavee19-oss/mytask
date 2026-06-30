@@ -1751,12 +1751,39 @@
 
     <script>
         // APP STATE
-        const state = {
+        let state = {
             tasks: [],
             quickTodos: [],
             contacts: [],
             theme: 'light-theme'
         };
+
+        const STORAGE_KEY = 'myTaskApp_v1';
+
+        function saveState() {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            }
+        }
+
+        function loadState() {
+            if (typeof localStorage !== 'undefined') {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        state.tasks = parsed.tasks || [];
+                        state.quickTodos = parsed.quickTodos || [];
+                        state.contacts = parsed.contacts || [];
+                        state.theme = parsed.theme || 'light-theme';
+                        return true;
+                    } catch(e) {
+                        console.error('Error loading state', e);
+                    }
+                }
+            }
+            return false;
+        }
 
         // DOM Elements
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
@@ -1771,23 +1798,37 @@
         
         // Init App
         function initApp() {
-            // Mock Data
-            const todayStr = new Date().toISOString().split('T')[0];
-            state.tasks = [
-                { id: '1', title: 'สรุปรายงานยอดขาย', desc: 'ทำสรุปรายงานยอดขายประจำเดือน Q2', category: 'work', priority: 'ui', status: 'todo', assignDate: todayStr, deadline: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
-                { id: '2', title: 'ประชุมทีมการตลาด', desc: 'วางแผนแคมเปญใหม่', category: 'work', priority: 'inu', status: 'in_progress', assignDate: todayStr, deadline: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0] },
-                { id: '3', title: 'ซื้อของเข้าบ้าน', desc: 'ของใช้ที่จำเป็น', category: 'personal', priority: 'uni', status: 'todo', assignDate: todayStr, deadline: new Date(Date.now() - 86400000).toISOString().split('T')[0] }, // Overdue
-                { id: '4', title: 'เรียนคอร์ส React', desc: 'เรียนให้จบ chapter 5', category: 'learning', priority: 'nuni', status: 'completed', assignDate: todayStr, deadline: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0] }
-            ];
-            
-            state.quickTodos = [
-                { id: 't1', text: 'โทรหาลูกค้าคุณเอ', completed: false },
-                { id: 't2', text: 'ตอบอีเมลฝ่ายบุคคล', completed: true }
-            ];
-            
-            state.contacts = [
-                { id: 'c1', name: 'คุณบอย (IT)', phone: '081-234-5678', subject: 'ขอสิทธิ์เข้าถึงระบบ' }
-            ];
+            if (!loadState()) {
+                // Mock Data
+                const todayStr = new Date().toISOString().split('T')[0];
+                state.tasks = [
+                    { id: '1', title: 'สรุปรายงานยอดขาย', desc: 'ทำสรุปรายงานยอดขายประจำเดือน Q2', category: 'work', priority: 'ui', status: 'todo', assignDate: todayStr, deadline: new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+                    { id: '2', title: 'ประชุมทีมการตลาด', desc: 'วางแผนแคมเปญใหม่', category: 'work', priority: 'inu', status: 'in_progress', assignDate: todayStr, deadline: new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0] },
+                    { id: '3', title: 'ซื้อของเข้าบ้าน', desc: 'ของใช้ที่จำเป็น', category: 'personal', priority: 'uni', status: 'todo', assignDate: todayStr, deadline: new Date(Date.now() - 86400000).toISOString().split('T')[0] }, // Overdue
+                    { id: '4', title: 'เรียนคอร์ส React', desc: 'เรียนให้จบ chapter 5', category: 'learning', priority: 'nuni', status: 'completed', assignDate: todayStr, deadline: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0] }
+                ];
+                
+                state.quickTodos = [
+                    { id: 't1', text: 'โทรหาลูกค้าคุณเอ', completed: false },
+                    { id: 't2', text: 'ตอบอีเมลฝ่ายบุคคล', completed: true }
+                ];
+                
+                state.contacts = [
+                    { id: 'c1', name: 'คุณบอย (IT)', phone: '081-234-5678', subject: 'ขอสิทธิ์เข้าถึงระบบ' }
+                ];
+                saveState();
+            }
+
+            // Apply theme
+            if (state.theme === 'dark-theme') {
+                body.classList.remove('light-theme');
+                body.classList.add('dark-theme');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                body.classList.remove('dark-theme');
+                body.classList.add('light-theme');
+                themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
 
             setupEventListeners();
             renderAll();
@@ -1801,11 +1842,14 @@
                     body.classList.remove('dark-theme');
                     body.classList.add('light-theme');
                     themeToggleBtn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+                    state.theme = 'light-theme';
                 } else {
                     body.classList.remove('light-theme');
                     body.classList.add('dark-theme');
                     themeToggleBtn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+                    state.theme = 'dark-theme';
                 }
+                saveState();
             });
 
             // Tab Navigation
@@ -1989,6 +2033,7 @@
 
         // Render Functions
         function renderAll() {
+            saveState();
             renderStats();
             renderCategoryChart();
             renderMatrix();
@@ -2269,6 +2314,7 @@
         }
 
         function renderQuickTodos() {
+            saveState();
             const list = document.getElementById('quick-todo-list');
             list.innerHTML = '';
             
@@ -2307,6 +2353,7 @@
         }
 
         function renderContacts() {
+            saveState();
             const list = document.getElementById('contact-list');
             list.innerHTML = '';
             
